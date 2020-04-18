@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
+	"net/url"
 	"oceanlearn.teach/ginessential/model"
 )
 
@@ -17,13 +18,15 @@ func InitDB() *gorm.DB {
 	username := viper.GetString("datasource.username")
 	password := viper.GetString("datasource.password")
 	charset := viper.GetString("datasource.charset")
-	args := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true",
+	loc := viper.GetString("datasource.loc")
+	args := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true&loc=%s",
 		username,
 		password,
 		host,
 		port,
 		database,
-		charset)
+		charset,
+		url.QueryEscape(loc))
 
 	db, err := gorm.Open(driverName, args)
 	if err != nil {
