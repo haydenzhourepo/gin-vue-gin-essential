@@ -20,7 +20,9 @@ type CategoryController struct {
 
 func NewCategoryController() ICategoryController {
 	categoryController := CategoryController{Repository:repository.NewCategoryRepository()}
-	categoryController.Repository.(repository.CategoryRepository).DB.AutoMigrate(model.Post{})
+	categoryController.Repository.(
+		repository.CategoryRepository).DB.AutoMigrate(model.Category{
+	})
 	return categoryController
 }
 
