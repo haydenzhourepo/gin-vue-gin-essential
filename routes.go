@@ -8,24 +8,53 @@ import (
 
 func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.Use(middleware.CORSMiddleware(), middleware.RecoveryMiddleware())
-	r.POST("/api/auth/register", controller.Register)
-	r.POST("/api/auth/login", controller.Login)
-	r.GET("/api/auth/info", middleware.AuthMiddleware(), controller.Info)
+	// 创建路由的api分组
+	api := r.Group("/api/")
+	{
+		// 在api分组里面创建auth分组
+		auth := api.Group("/auth")
+		{
+			// 注册接口
+			auth.POST("/register", controller.Register)
+			// 登录接口
+			auth.POST("/login", controller.Login)
+			// 获取用户信息，此接口需要鉴权中间件认证
+			auth.GET("/info", middleware.AuthMiddleware(), controller.Info)
+		}
+	}
 
+	// 创建categoryRoutes分组
 	categoryRoutes := r.Group("/categories")
-	categoryController := controller.NewCategoryController()
-	categoryRoutes.POST("", categoryController.Create)
-	categoryRoutes.PUT(":id", categoryController.Update)
-	categoryRoutes.GET(":id", categoryController.Show)
-	categoryRoutes.DELETE(":id", categoryController.Delete)
+	{
+		// 创建categoryController
+		categoryController := controller.NewCategoryController()
+		// category创建接口
+		categoryRoutes.POST("", categoryController.Create)
+		// category更新接口
+		categoryRoutes.PUT(":id", categoryController.Update)
+		// category展示接口
+		categoryRoutes.GET(":id", categoryController.Show)
+		// category删除接口
+		categoryRoutes.DELETE(":id", categoryController.Delete)
+	}
 
+	// 创建postRoutes分组
 	postRoutes := r.Group("/posts")
-	postRoutes.Use(middleware.AuthMiddleware())
-	postController := controller.NewPostController()
-	postRoutes.POST("", postController.Create)
-	postRoutes.PUT(":id", postController.Update)
-	postRoutes.GET(":id", postController.Show)
-	postRoutes.DELETE(":id", postController.Delete)
-	postRoutes.POST("page/list", postController.PageList)
+	{
+		// postRoute使用鉴权中间件
+		postRoutes.Use(middleware.AuthMiddleware())
+		// 创建postController
+		postController := controller.NewPostController()
+		// post创建接口
+		postRoutes.POST("", postController.Create)
+		// post更新接口
+		postRoutes.PUT(":id", postController.Update)
+		// post展示接口
+		postRoutes.GET(":id", postController.Show)
+		// post删除接口
+		postRoutes.DELETE(":id", postController.Delete)
+		// 分页接口
+		postRoutes.POST("page/list", postController.PageList)
+	}
 	return r
 }
